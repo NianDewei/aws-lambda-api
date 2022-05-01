@@ -1,0 +1,71 @@
+service: aws-lambda-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-west-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-west-2:884681255855:table/TaskTable
+
+
+functions:
+  hello:
+    handler: src/hello.hello
+    events:
+      - httpApi:
+          path: /
+          method: get
+
+  indexTask:
+      handler: src/task.index
+      events:
+        - httpApi:
+            path: /tasks
+            method: get
+
+  storeTask:
+      handler: src/task.store
+      events:
+        - httpApi:
+            path: /tasks
+            method: post
+
+  showTask:
+      handler: src/task.show
+      events:
+        - httpApi:
+            path: /tasks/{id}
+            method: get
+
+  updateTask:
+      handler: src/task.update
+      events:
+        - httpApi:
+            path: /tasks/{id}
+            method: put
+  deleteTask:
+      handler: src/task.destroy
+      events:
+        - httpApi:
+            path: /tasks/{id}
+            method: delete
+
+
+resources:
+  Resources:
+    TaskTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TaskTable
+        BillingMode: PAY_PER_REQUEST 
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
